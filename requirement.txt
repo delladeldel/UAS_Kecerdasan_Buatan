@@ -1,7 +1,7 @@
-streamlit == 3.9.0
-pandas
-numpy
-matplotlib
+streamlit 
+pandas=2.2.2
+numpy==1.26.4
+matplotlib==3.9.0
 seaborn
 scikit-learn
-pickle
+pickle5
