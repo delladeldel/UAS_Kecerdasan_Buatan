@@ -4,75 +4,83 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.cluster import KMeans
-
-# Title of the application
-st.title('Customer Segmentation using K-Means Clustering')
+from sklearn.ensemble import RandomForestClassifier
 
 # Load data
 @st.cache
 def load_data():
-    customer_data = pd.read_csv('Mall_Customers.csv')
-    return customer_data
+    return pd.read_csv('Mall_Customers.csv')
 
+# Main title and description
+st.title('Customer Segmentation and Prediction App')
+st.write('This app performs customer segmentation using K-Means clustering and saves a RandomForestClassifier model.')
+
+# Load data
 customer_data = load_data()
 
-# Display the first few rows
-st.write("### Customer Data (First 5 rows)")
-st.dataframe(customer_data.head())
+# Display first 5 rows of the dataframe
+st.subheader('First 5 rows of the dataset:')
+st.write(customer_data.head())
 
-# Data shape and info
-st.write("### Data Information")
-st.write("Shape of the dataset:", customer_data.shape)
-st.write("Information of the dataset:")
+# Display dataset info
+st.subheader('Dataset information:')
 st.write(customer_data.info())
 
 # Check for missing values
-st.write("### Missing Values Check")
+st.subheader('Missing values:')
 st.write(customer_data.isnull().sum())
 
-# Choosing Annual Income and Spending Score columns
+# Perform clustering
+st.subheader('Customer Segmentation using K-Means Clustering:')
 X = customer_data.iloc[:, [3, 4]].values
 
-# Calculate WCSS for different number of clusters
+# Finding the optimal number of clusters using the Elbow method
 wcss = []
 for i in range(1, 11):
     kmeans = KMeans(n_clusters=i, init='k-means++', random_state=42)
     kmeans.fit(X)
     wcss.append(kmeans.inertia_)
 
-# Plot the Elbow Point Graph
-st.write("### Elbow Point Graph")
-fig, ax = plt.subplots(figsize=(8, 6))
-sns.lineplot(x=range(1, 11), y=wcss, marker='o', ax=ax)
-ax.set_title('The Elbow Method')
-ax.set_xlabel('Number of clusters')
-ax.set_ylabel('WCSS')
+# Plotting the Elbow graph
+st.subheader('Elbow Point Graph:')
+fig = plt.figure()
+plt.plot(range(1, 11), wcss)
+plt.title('The Elbow Point Graph')
+plt.xlabel('Number of Clusters')
+plt.ylabel('WCSS')
 st.pyplot(fig)
 
-# Optimum number of clusters
-st.write("### Optimum Number of Clusters")
-st.write("From the above elbow graph, we can see that the optimum number of clusters is around 5.")
-
-# Training the k-Means model
+# Perform K-Means clustering with 5 clusters
 kmeans = KMeans(n_clusters=5, init='k-means++', random_state=0)
 Y = kmeans.fit_predict(X)
 
-# Visualizing all the clusters
-st.write("### Visualizing Clusters")
-fig, ax = plt.subplots(figsize=(8, 8))  # Create a figure and axis object
-ax.scatter(X[Y == 0, 0], X[Y == 0, 1], s=50, c='green', label='Cluster 1')
-ax.scatter(X[Y == 1, 0], X[Y == 1, 1], s=50, c='red', label='Cluster 2')
-ax.scatter(X[Y == 2, 0], X[Y == 2, 1], s=50, c='yellow', label='Cluster 3')
-ax.scatter(X[Y == 3, 0], X[Y == 3, 1], s=50, c='violet', label='Cluster 4')
-ax.scatter(X[Y == 4, 0], X[Y == 4, 1], s=50, c='blue', label='Cluster 5')
+# Plot clusters and centroids
+st.subheader('Customer Groups:')
+fig = plt.figure(figsize=(8, 8))
+plt.scatter(X[Y == 0, 0], X[Y == 0, 1], s=50, c='green', label='Cluster 1')
+plt.scatter(X[Y == 1, 0], X[Y == 1, 1], s=50, c='red', label='Cluster 2')
+plt.scatter(X[Y == 2, 0], X[Y == 2, 1], s=50, c='yellow', label='Cluster 3')
+plt.scatter(X[Y == 3, 0], X[Y == 3, 1], s=50, c='violet', label='Cluster 4')
+plt.scatter(X[Y == 4, 0], X[Y == 4, 1], s=50, c='blue', label='Cluster 5')
 
 # Plot centroids
-ax.scatter(kmeans.cluster_centers_[:, 0], kmeans.cluster_centers_[:, 1], s=100, c='cyan', label='Centroids')
+plt.scatter(kmeans.cluster_centers_[:, 0], kmeans.cluster_centers_[:, 1], s=100, c='cyan', label='Centroids')
 
-ax.set_title('Customer Groups')
-ax.set_xlabel('Annual Income')
-ax.set_ylabel('Spending Score')
-ax.legend()
-
-# Show plot using st.pyplot()
+plt.title('Customer Groups')
+plt.xlabel('Annual Income')
+plt.ylabel('Spending Score')
 st.pyplot(fig)
+
+# Training a RandomForestClassifier and saving the model
+st.subheader('Training RandomForestClassifier:')
+X_train = [[0, 0], [1, 1]]
+y_train = [0, 1]
+classifier = RandomForestClassifier()
+classifier.fit(X_train, y_train)
+
+# Save the trained model to a file
+filename = 'customer_model.sav'
+with open(filename, 'wb') as file:
+    pickle.dump(classifier, file)
+
+st.write(f"Model saved to {filename}")
