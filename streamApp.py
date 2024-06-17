@@ -9,7 +9,7 @@ from sklearn.cluster import KMeans
 st.title('Customer Segmentation using K-Means Clustering')
 
 # Load data
-@st.cache_data
+@st.cache
 def load_data():
     customer_data = pd.read_csv('Mall_Customers.csv')
     return customer_data
