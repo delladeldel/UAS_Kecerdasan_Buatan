@@ -14,28 +14,33 @@ This app uses KMeans clustering to segment customers based on their annual incom
 """)
 
 # Load the data
-customer_data = pd.read_csv('Mall_Customers.csv')
+data_path = 'Mall_Customers.csv'
+customer_data = pd.read_csv(data_path)
 
 # Display the data
-st.write("### Customer Data", customer_data.head())
+st.subheader("Customer Data")
+st.write(customer_data.head())
 
 # Display the shape of the dataset
-st.write("### Data Shape", customer_data.shape)
+st.subheader("Data Shape")
+st.write(f"The dataset contains {customer_data.shape[0]} rows and {customer_data.shape[1]} columns.")
 
 # Display dataset info
-st.write("### Dataset Info")
+st.subheader("Dataset Info")
 buffer = io.StringIO()
 customer_data.info(buf=buffer)
 s = buffer.getvalue()
 st.text(s)
 
 # Check for missing values
-st.write("### Missing Values", customer_data.isnull().sum())
+st.subheader("Missing Values")
+st.write(customer_data.isnull().sum())
 
 # Extract features for clustering
 X = customer_data.iloc[:, [3, 4]].values
 
 # Finding WCSS for different number of clusters
+st.subheader("Elbow Method for Optimal Clusters")
 wcss = []
 for i in range(1, 11):
     kmeans = KMeans(n_clusters=i, init='k-means++', random_state=42)
@@ -43,35 +48,33 @@ for i in range(1, 11):
     wcss.append(kmeans.inertia_)
 
 # Plot the elbow graph
-st.write("### Elbow Point Graph")
-plt.figure(figsize=(8, 5))
+fig, ax = plt.subplots(figsize=(10, 6))
 sns.set()
-plt.plot(range(1, 11), wcss)
-plt.title('The Elbow Point Graph')
-plt.xlabel('Number of Clusters')
-plt.ylabel('WCSS')
-st.pyplot(plt)
+ax.plot(range(1, 11), wcss, marker='o')
+ax.set_title('The Elbow Point Graph')
+ax.set_xlabel('Number of Clusters')
+ax.set_ylabel('WCSS')
+st.pyplot(fig)
 
 # Train the KMeans model with the optimal number of clusters (let's assume 5)
 kmeans = KMeans(n_clusters=5, init='k-means++', random_state=42)
 Y = kmeans.fit_predict(X)
 
 # Plot the clusters
-st.write("### Customer Groups")
-plt.figure(figsize=(8, 8))
-plt.scatter(X[Y == 0, 0], X[Y == 0, 1], s=50, c='green', label='Cluster 1')
-plt.scatter(X[Y == 1, 0], X[Y == 1, 1], s=50, c='red', label='Cluster 2')
-plt.scatter(X[Y == 2, 0], X[Y == 2, 1], s=50, c='yellow', label='Cluster 3')
-plt.scatter(X[Y == 3, 0], X[Y == 3, 1], s=50, c='violet', label='Cluster 4')
-plt.scatter(X[Y == 4, 0], X[Y == 4, 1], s=50, c='blue', label='Cluster 5')
+st.subheader("Customer Groups")
+fig, ax = plt.subplots(figsize=(10, 8))
+colors = ['green', 'red', 'yellow', 'violet', 'blue']
+labels = ['Cluster 1', 'Cluster 2', 'Cluster 3', 'Cluster 4', 'Cluster 5']
+for i in range(5):
+    ax.scatter(X[Y == i, 0], X[Y == i, 1], s=50, c=colors[i], label=labels[i])
 
 # Plot the centroids
-plt.scatter(kmeans.cluster_centers_[:, 0], kmeans.cluster_centers_[:, 1], s=100, c='cyan', label='Centroids')
-plt.title('Customer Groups')
-plt.xlabel('Annual Income')
-plt.ylabel('Spending Score')
-plt.legend()
-st.pyplot(plt)
+ax.scatter(kmeans.cluster_centers_[:, 0], kmeans.cluster_centers_[:, 1], s=100, c='cyan', label='Centroids')
+ax.set_title('Customer Groups')
+ax.set_xlabel('Annual Income')
+ax.set_ylabel('Spending Score')
+ax.legend()
+st.pyplot(fig)
 
 # Save the trained KMeans model to a file
 kmeans_model_filename = 'kmeans_customer_model.sav'
@@ -80,7 +83,8 @@ with open(kmeans_model_filename, 'wb') as file:
 st.write(f"KMeans model saved to {kmeans_model_filename}")
 
 # Predicting cluster for new data points
-st.write("### Predict Customer Cluster")
+st.subheader("Predict Customer Cluster")
+st.write("Enter the annual income and spending score of a customer to predict their cluster.")
 annual_income = st.number_input('Annual Income', min_value=0, max_value=150, value=50)
 spending_score = st.number_input('Spending Score', min_value=0, max_value=100, value=50)
 new_data = np.array([[annual_income, spending_score]])
