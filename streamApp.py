@@ -76,6 +76,12 @@ ax.set_ylabel('Spending Score')
 ax.legend()
 st.pyplot(fig)
 
+# Save the trained KMeans model to a file
+kmeans_model_filename = 'kmeans_customer_model.sav'
+with open(kmeans_model_filename, 'wb') as file:
+    pickle.dump(kmeans, file)
+st.write(f"KMeans model saved to {kmeans_model_filename}")
+
 # Predicting cluster for new data points
 st.subheader("Predict Customer Cluster")
 st.write("Enter the annual income and spending score of a customer to predict their cluster.")
