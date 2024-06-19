@@ -82,6 +82,20 @@ with open(kmeans_model_filename, 'wb') as file:
     pickle.dump(kmeans, file)
 st.write(f"KMeans model saved to {kmeans_model_filename}")
 
+# Descriptions of each cluster
+cluster_descriptions = {
+    0: "Cluster 1: High income, high spending. These customers have high annual incomes and high spending scores, indicating they are potentially luxury spenders.",
+    1: "Cluster 2: High income, low spending. These customers have high annual incomes but low spending scores, suggesting they are conservative spenders.",
+    2: "Cluster 3: Average income, average spending. These customers have average annual incomes and spending scores, representing a typical mid-market segment.",
+    3: "Cluster 4: Low income, high spending. These customers have low annual incomes but high spending scores, indicating they might prioritize spending despite limited income.",
+    4: "Cluster 5: Low income, low spending. These customers have low annual incomes and low spending scores, representing a budget-conscious segment."
+}
+
+# Display descriptions of each cluster
+st.subheader("Cluster Descriptions")
+for i in range(5):
+    st.write(cluster_descriptions[i])
+
 # Predicting cluster for new data points
 st.subheader("Predict Customer Cluster")
 st.write("Enter the annual income and spending score of a customer to predict their cluster.")
@@ -95,5 +109,7 @@ with open(kmeans_model_filename, 'rb') as file:
 
 # Predict the cluster
 cluster = loaded_kmeans.predict(new_data)
+predicted_cluster_description = cluster_descriptions[cluster[0]]
 
 st.write(f"The predicted cluster for a customer with annual income {annual_income} and spending score {spending_score} is: Cluster {cluster[0] + 1}")
+st.write(predicted_cluster_description)
