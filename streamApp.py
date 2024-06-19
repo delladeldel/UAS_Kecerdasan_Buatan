@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.cluster import KMeans
 import pickle
+import io
 
 # Set up Streamlit app
 st.title('Customer Segmentation using KMeans Clustering')
