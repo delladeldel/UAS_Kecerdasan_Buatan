@@ -4,75 +4,91 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.cluster import KMeans
+import pickle
 
-# Title of the application
-st.title('Customer Segmentation using K-Means Clustering')
+# Set up Streamlit app
+st.title('Customer Segmentation using KMeans Clustering')
+st.write("""
+This app uses KMeans clustering to segment customers based on their annual income and spending score.
+""")
 
-# Load data
-@st.cache_data
-def load_data():
-    customer_data = pd.read_csv('Mall_Customers.csv')
-    return customer_data
+# Load the data
+customer_data = pd.read_csv('Mall_Customers.csv')
 
-customer_data = load_data()
+# Display the data
+st.write("### Customer Data", customer_data.head())
 
-# Display the first few rows
-st.write("### Customer Data (First 5 rows)")
-st.dataframe(customer_data.head())
+# Display the shape of the dataset
+st.write("### Data Shape", customer_data.shape)
 
-# Data shape and info
-st.write("### Data Information")
-st.write("Shape of the dataset:", customer_data.shape)
-st.write("Information of the dataset:")
-st.write(customer_data.info())
+# Display dataset info
+st.write("### Dataset Info")
+buffer = io.StringIO()
+customer_data.info(buf=buffer)
+s = buffer.getvalue()
+st.text(s)
 
 # Check for missing values
-st.write("### Missing Values Check")
-st.write(customer_data.isnull().sum())
+st.write("### Missing Values", customer_data.isnull().sum())
 
-# Choosing Annual Income and Spending Score columns
+# Extract features for clustering
 X = customer_data.iloc[:, [3, 4]].values
 
-# Calculate WCSS for different number of clusters
+# Finding WCSS for different number of clusters
 wcss = []
 for i in range(1, 11):
     kmeans = KMeans(n_clusters=i, init='k-means++', random_state=42)
     kmeans.fit(X)
     wcss.append(kmeans.inertia_)
 
-# Plot the Elbow Point Graph
+# Plot the elbow graph
 st.write("### Elbow Point Graph")
-fig, ax = plt.subplots(figsize=(8, 6))
-sns.lineplot(x=range(1, 11), y=wcss, marker='o', ax=ax)
-ax.set_title('The Elbow Method')
-ax.set_xlabel('Number of clusters')
-ax.set_ylabel('WCSS')
-st.pyplot(fig)
+plt.figure(figsize=(8, 5))
+sns.set()
+plt.plot(range(1, 11), wcss)
+plt.title('The Elbow Point Graph')
+plt.xlabel('Number of Clusters')
+plt.ylabel('WCSS')
+st.pyplot(plt)
 
-# Optimum number of clusters
-st.write("### Optimum Number of Clusters")
-st.write("From the above elbow graph, we can see that the optimum number of clusters is around 5.")
-
-# Training the k-Means model
-kmeans = KMeans(n_clusters=5, init='k-means++', random_state=0)
+# Train the KMeans model with the optimal number of clusters (let's assume 5)
+kmeans = KMeans(n_clusters=5, init='k-means++', random_state=42)
 Y = kmeans.fit_predict(X)
 
-# Visualizing all the clusters
-st.write("### Visualizing Clusters")
-fig, ax = plt.subplots(figsize=(8, 8))  # Create a figure and axis object
-ax.scatter(X[Y == 0, 0], X[Y == 0, 1], s=50, c='green', label='Cluster 1')
-ax.scatter(X[Y == 1, 0], X[Y == 1, 1], s=50, c='red', label='Cluster 2')
-ax.scatter(X[Y == 2, 0], X[Y == 2, 1], s=50, c='yellow', label='Cluster 3')
-ax.scatter(X[Y == 3, 0], X[Y == 3, 1], s=50, c='violet', label='Cluster 4')
-ax.scatter(X[Y == 4, 0], X[Y == 4, 1], s=50, c='blue', label='Cluster 5')
+# Plot the clusters
+st.write("### Customer Groups")
+plt.figure(figsize=(8, 8))
+plt.scatter(X[Y == 0, 0], X[Y == 0, 1], s=50, c='green', label='Cluster 1')
+plt.scatter(X[Y == 1, 0], X[Y == 1, 1], s=50, c='red', label='Cluster 2')
+plt.scatter(X[Y == 2, 0], X[Y == 2, 1], s=50, c='yellow', label='Cluster 3')
+plt.scatter(X[Y == 3, 0], X[Y == 3, 1], s=50, c='violet', label='Cluster 4')
+plt.scatter(X[Y == 4, 0], X[Y == 4, 1], s=50, c='blue', label='Cluster 5')
 
-# Plot centroids
-ax.scatter(kmeans.cluster_centers_[:, 0], kmeans.cluster_centers_[:, 1], s=100, c='cyan', label='Centroids')
+# Plot the centroids
+plt.scatter(kmeans.cluster_centers_[:, 0], kmeans.cluster_centers_[:, 1], s=100, c='cyan', label='Centroids')
+plt.title('Customer Groups')
+plt.xlabel('Annual Income')
+plt.ylabel('Spending Score')
+plt.legend()
+st.pyplot(plt)
 
-ax.set_title('Customer Groups')
-ax.set_xlabel('Annual Income')
-ax.set_ylabel('Spending Score')
-ax.legend()
+# Save the trained KMeans model to a file
+kmeans_model_filename = 'kmeans_customer_model.sav'
+with open(kmeans_model_filename, 'wb') as file:
+    pickle.dump(kmeans, file)
+st.write(f"KMeans model saved to {kmeans_model_filename}")
 
-# Show plot using st.pyplot()
-st.pyplot(fig)
+# Predicting cluster for new data points
+st.write("### Predict Customer Cluster")
+annual_income = st.number_input('Annual Income', min_value=0, max_value=150, value=50)
+spending_score = st.number_input('Spending Score', min_value=0, max_value=100, value=50)
+new_data = np.array([[annual_income, spending_score]])
+
+# Load the trained model
+with open(kmeans_model_filename, 'rb') as file:
+    loaded_kmeans = pickle.load(file)
+
+# Predict the cluster
+cluster = loaded_kmeans.predict(new_data)
+
+st.write(f"The predicted cluster for a customer with annual income {annual_income} and spending score {spending_score} is: Cluster {cluster[0] + 1}")
