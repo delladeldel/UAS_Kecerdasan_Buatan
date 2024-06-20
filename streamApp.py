@@ -57,7 +57,7 @@ ax.set_ylabel('WCSS')
 st.pyplot(fig)
 
 # Train the KMeans model with the optimal number of clusters (let's assume 5)
-kmeans = KMeans(n_clusters=3, init='k-means++', random_state=42)
+kmeans = KMeans(n_clusters=5, init='k-means++', random_state=42)
 Y = kmeans.fit_predict(X)
 
 # Plot the clusters
