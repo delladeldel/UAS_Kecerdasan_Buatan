@@ -95,7 +95,5 @@ with open(kmeans_model_filename, 'rb') as file:
 
 # Predict the cluster
 cluster = loaded_kmeans.predict(new_data)
-predicted_cluster_description = cluster_descriptions[cluster[0]]
 
 st.write(f"The predicted cluster for a customer with annual income {annual_income} and spending score {spending_score} is: Cluster {cluster[0] + 1}")
-st.write(predicted_cluster_description)
