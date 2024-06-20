@@ -82,11 +82,6 @@ with open(kmeans_model_filename, 'wb') as file:
     pickle.dump(kmeans, file)
 st.write(f"KMeans model saved to {kmeans_model_filename}")
 
-# Display descriptions of each cluster
-st.subheader("Cluster Descriptions")
-for i in range(5):
-    st.write(cluster_descriptions[i])
-
 # Predicting cluster for new data points
 st.subheader("Predict Customer Cluster")
 st.write("Enter the annual income and spending score of a customer to predict their cluster.")
